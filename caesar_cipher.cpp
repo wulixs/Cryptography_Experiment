@@ -38,15 +38,15 @@ int main() {
     int choice;
 
     cout << "==============================" << endl;
-    cout << "        凯撒密码程序        " << endl;
+    cout << "      Caesar Cipher Program      " << endl;
     cout << "==============================" << endl;
-    cout << "1. 加密" << endl;
-    cout << "2. 解密" << endl;
-    cout << "请选择功能：";
+    cout << "1. Encrypt" << endl;
+    cout << "2. Decrypt" << endl;
+    cout << "Please choose an option: ";
     cin >> choice;
 
     if (choice != 1 && choice != 2) {
-        cout << "输入有误，请输入 1 或 2。" << endl;
+        cout << "Invalid input, please enter 1 or 2." << endl;
         return 0;
     }
 
@@ -55,24 +55,24 @@ int main() {
 
     // 输入需要处理的文本，可以包含空格
     if (choice == 1) {
-        cout << "请输入明文：";
+        cout << "Enter plaintext: ";
     } else {
-        cout << "请输入密文：";
+        cout << "Enter ciphertext: ";
     }
 
     getline(cin, text);
 
     // 输入偏移量，用户可以自由选择正数、负数或大于 26 的数
-    cout << "请输入偏移量：";
+    cout << "Enter offset: ";
     cin >> offset;
 
     bool encrypt = (choice == 1);
     string result = caesarCipher(text, offset, encrypt);
 
     if (encrypt) {
-        cout << "凯撒加密结果：" << result << endl;
+        cout << "Encryption result: " << result << endl;
     } else {
-        cout << "凯撒解密结果：" << result << endl;
+        cout << "Decryption result: " << result << endl;
     }
 
     return 0;
