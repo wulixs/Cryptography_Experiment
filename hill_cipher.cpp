@@ -127,7 +127,7 @@ bool invertMatrixMod26(const vector<vector<int>> &matrix, vector<vector<int>> &i
 bool readKeyMatrix(int n, vector<vector<int>> &matrix) {
     matrix.assign(n, vector<int>(n, 0));
 
-    cout << "请输入密钥矩阵，共 " << n * n << " 个整数（每个元素会按 26 取模）：" << endl;
+    cout << "Please enter the key matrix, with a total of " << n * n << " integers (each value will be reduced modulo 26):" << endl;
     for (int row = 0; row < n; ++row) {
         for (int col = 0; col < n; ++col) {
             cout << "a[" << row + 1 << "][" << col + 1 << "] = ";
@@ -207,7 +207,7 @@ string hillDecrypt(const string &cipherText, const vector<vector<int>> &keyMatri
     vector<vector<int>> inverseMatrix;
 
     if (!invertMatrixMod26(keyMatrix, inverseMatrix)) {
-        return "[错误] 该密钥矩阵在模 26 下不可逆，无法解密。";
+        return "[Error] This key matrix is not invertible modulo 26, so decryption is not possible.";
     }
 
     string normalized = normalizeText(cipherText);
@@ -241,27 +241,27 @@ int main() {
     vector<vector<int>> keyMatrix;
 
     cout << "====================================" << endl;
-    cout << "          希尔密码程序" << endl;
+    cout << "          Hill Cipher Program" << endl;
     cout << "====================================" << endl;
-    cout << "1. 加密" << endl;
-    cout << "2. 解密" << endl;
-    cout << "请选择功能：";
+    cout << "1. Encrypt" << endl;
+    cout << "2. Decrypt" << endl;
+    cout << "Please choose an option: ";
     cin >> choice;
 
     if (choice != 1 && choice != 2) {
-        cout << "输入有误，请输入 1 或 2。" << endl;
+        cout << "Invalid input. Please enter 1 or 2." << endl;
         return 0;
     }
 
-    cout << "请输入密钥矩阵的阶数 n（例如 2 表示 2x2，3 表示 3x3）：";
+    cout << "Enter the order n of the key matrix (for example, 2 means 2x2, 3 means 3x3): ";
     cin >> n;
     if (n <= 0) {
-        cout << "矩阵阶数必须大于 0。" << endl;
+        cout << "The matrix order must be greater than 0." << endl;
         return 0;
     }
 
     if (!readKeyMatrix(n, keyMatrix)) {
-        cout << "密钥矩阵输入失败，请确保输入的是整数。" << endl;
+        cout << "Failed to read the key matrix. Please make sure all inputs are integers." << endl;
         return 0;
     }
 
@@ -269,19 +269,19 @@ int main() {
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
     if (choice == 1) {
-        cout << "请输入明文（程序会自动只保留英文字母并转成大写）：";
+        cout << "Please enter the plaintext (the program will keep only letters and convert them to uppercase): ";
     } else {
-        cout << "请输入密文（程序会自动只保留英文字母并转成大写）：";
+        cout << "Please enter the ciphertext (the program will keep only letters and convert them to uppercase): ";
     }
 
     getline(cin, inputText);
 
     if (choice == 1) {
         string cipherText = hillEncrypt(inputText, keyMatrix);
-        cout << "希尔加密结果：" << cipherText << endl;
+        cout << "Hill encryption result: " << cipherText << endl;
     } else {
         string plainText = hillDecrypt(inputText, keyMatrix);
-        cout << "希尔解密结果：" << plainText << endl;
+        cout << "Hill decryption result: " << plainText << endl;
     }
 
     return 0;
