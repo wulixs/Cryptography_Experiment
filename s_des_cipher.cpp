@@ -7,6 +7,10 @@
 #include <utility>
 #include <vector>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 using namespace std;
 
 // S-DES 的全部参数集中存放，方便用户自定义和打印说明
@@ -193,7 +197,7 @@ int readChoice() {
             return choice;
         }
 
-        cout << "Invalid input. Please enter a number." << endl;
+        cout << "输入无效，请输入数字。" << endl;
     }
 }
 
@@ -217,7 +221,7 @@ bool askYes(const string &prompt) {
             return false;
         }
 
-        cout << "Please answer with y or n." << endl;
+        cout << "请回答 y 或 n。" << endl;
     }
 }
 
@@ -233,7 +237,7 @@ vector<int> readBitBlock(const string &prompt, int expectedLength) {
             return bits;
         }
 
-        cout << "Invalid input. Please enter exactly " << expectedLength << " bits using 0 and 1 only." << endl;
+        cout << "输入无效，请只输入 " << expectedLength << " 位 0 和 1。" << endl;
     }
 }
 
@@ -254,7 +258,7 @@ vector<int> readPermutationTable(const string &prompt, int expectedLength, int m
             return values;
         }
 
-        cout << "Invalid permutation. Please enter " << expectedLength << " unique integers from 1 to " << maxValue << "." << endl;
+        cout << "置换表无效，请输入 " << expectedLength << " 个互不重复的整数，范围为 1 到 " << maxValue << "。" << endl;
     }
 }
 
@@ -275,7 +279,7 @@ vector<int> readExpansionTable(const string &prompt, int expectedLength, int max
             return values;
         }
 
-        cout << "Invalid expansion table. Please enter " << expectedLength << " integers from 1 to " << maxValue << ", duplicates allowed." << endl;
+        cout << "扩展表无效，请输入 " << expectedLength << " 个整数，范围为 1 到 " << maxValue << "，允许重复。" << endl;
     }
 }
 
@@ -285,7 +289,7 @@ array<array<int, 4>, 4> readSBox(const string &label, const array<array<int, 4>,
 
     for (int row = 0; row < 4; ++row) {
         while (true) {
-            cout << label << " row " << (row + 1) << " (4 numbers, press Enter for default: "
+              cout << label << " 第 " << (row + 1) << " 行（4 个数字，直接回车使用默认值："
                  << defaultValue[row][0] << ' ' << defaultValue[row][1] << ' ' << defaultValue[row][2] << ' '
                  << defaultValue[row][3] << "): ";
 
@@ -305,7 +309,7 @@ array<array<int, 4>, 4> readSBox(const string &label, const array<array<int, 4>,
                 break;
             }
 
-            cout << "Invalid row. Please enter 4 integers between 0 and 3." << endl;
+            cout << "该行无效，请输入 4 个 0 到 3 之间的整数。" << endl;
         }
     }
 
@@ -363,34 +367,34 @@ vector<int> fk(const vector<int> &state8, const vector<int> &subKey, const SDesC
     vector<int> right(state8.begin() + 4, state8.end());
 
     cout << roundName << endl;
-    printBits("  Left  = ", left);
-    printBits("  Right = ", right);
+    printBits("  左半部分 = ", left);
+    printBits("  右半部分 = ", right);
 
     vector<int> expanded = permute(right, config.ep);
-    printBits("  EP(R) = ", expanded);
+    printBits("  扩展置换 EP(R) = ", expanded);
 
     vector<int> xored = xorBits(expanded, subKey);
-    printBits("  EP(R) XOR K = ", xored);
+    printBits("  EP(R) 与子密钥异或 = ", xored);
 
     vector<int> leftPart(xored.begin(), xored.begin() + 4);
     vector<int> rightPart(xored.begin() + 4, xored.end());
 
     vector<int> s0Output = applySBox(config.s0, leftPart);
     vector<int> s1Output = applySBox(config.s1, rightPart);
-    printBits("  S0 output = ", s0Output);
-    printBits("  S1 output = ", s1Output);
+    printBits("  S0 输出 = ", s0Output);
+    printBits("  S1 输出 = ", s1Output);
 
     vector<int> sboxCombined = combine(s0Output, s1Output);
-    printBits("  S0||S1 = ", sboxCombined);
+    printBits("  S0||S1 拼接结果 = ", sboxCombined);
 
     vector<int> p4 = permute(sboxCombined, config.p4);
-    printBits("  P4 = ", p4);
+    printBits("  P4 置换 = ", p4);
 
     vector<int> newLeft = xorBits(left, p4);
-    printBits("  New left = ", newLeft);
+    printBits("  新左半部分 = ", newLeft);
 
     vector<int> result = combine(newLeft, right);
-    printBits("  fk output = ", result);
+    printBits("  fk 输出 = ", result);
     return result;
 }
 
@@ -404,38 +408,38 @@ vector<int> swapHalves(const vector<int> &state8) {
 // 生成 K1 和 K2，并打印密钥扩展全过程
 pair<vector<int>, vector<int>> generateSubkeys(const vector<int> &key10, const SDesConfig &config) {
     cout << endl;
-    cout << "Key schedule" << endl;
-    printBits("  Key = ", key10);
+    cout << "密钥扩展" << endl;
+    printBits("  密钥 = ", key10);
 
     vector<int> p10Result = permute(key10, config.p10);
-    printBits("  P10(Key) = ", p10Result);
+    printBits("  P10(密钥) = ", p10Result);
 
     vector<int> left(p10Result.begin(), p10Result.begin() + 5);
     vector<int> right(p10Result.begin() + 5, p10Result.end());
-    printBits("  Left 5 = ", left);
-    printBits("  Right 5 = ", right);
+    printBits("  左 5 位 = ", left);
+    printBits("  右 5 位 = ", right);
 
     vector<int> ls1Left = leftRotate(left, 1);
     vector<int> ls1Right = leftRotate(right, 1);
-    printBits("  LS-1 Left  = ", ls1Left);
-    printBits("  LS-1 Right = ", ls1Right);
+    printBits("  左移 1 位后左半部分 = ", ls1Left);
+    printBits("  左移 1 位后右半部分 = ", ls1Right);
 
     vector<int> ls1Combined = combine(ls1Left, ls1Right);
-    printBits("  LS-1 Combined = ", ls1Combined);
+    printBits("  左移 1 位后拼接结果 = ", ls1Combined);
 
     vector<int> k1 = permute(ls1Combined, config.p8);
-    printBits("  K1 = ", k1);
+    printBits("  子密钥 K1 = ", k1);
 
     vector<int> ls2Left = leftRotate(ls1Left, 2);
     vector<int> ls2Right = leftRotate(ls1Right, 2);
-    printBits("  LS-2 Left  = ", ls2Left);
-    printBits("  LS-2 Right = ", ls2Right);
+    printBits("  再左移 2 位后左半部分 = ", ls2Left);
+    printBits("  再左移 2 位后右半部分 = ", ls2Right);
 
     vector<int> ls2Combined = combine(ls2Left, ls2Right);
-    printBits("  LS-2 Combined = ", ls2Combined);
+    printBits("  再左移 2 位后拼接结果 = ", ls2Combined);
 
     vector<int> k2 = permute(ls2Combined, config.p8);
-    printBits("  K2 = ", k2);
+    printBits("  子密钥 K2 = ", k2);
 
     return {k1, k2};
 }
@@ -443,49 +447,49 @@ pair<vector<int>, vector<int>> generateSubkeys(const vector<int> &key10, const S
 // 单个 8 位明文块加密
 vector<int> encryptBlock(const vector<int> &plain8, const SDesConfig &config, const vector<int> &k1, const vector<int> &k2) {
     cout << endl;
-    cout << "Encryption process" << endl;
-    printBits("Plaintext block = ", plain8);
+    cout << "加密过程" << endl;
+    printBits("明文块 = ", plain8);
 
     vector<int> afterIp = permute(plain8, config.ip);
-    printBits("After IP = ", afterIp);
+    printBits("经过初始置换 IP = ", afterIp);
 
-    vector<int> afterRound1 = fk(afterIp, k1, config, "Round 1");
+    vector<int> afterRound1 = fk(afterIp, k1, config, "第 1 轮");
 
     vector<int> afterSwap = swapHalves(afterRound1);
-    printBits("After swap = ", afterSwap);
+    printBits("交换左右半部分后 = ", afterSwap);
 
-    vector<int> afterRound2 = fk(afterSwap, k2, config, "Round 2");
+    vector<int> afterRound2 = fk(afterSwap, k2, config, "第 2 轮");
 
     vector<int> cipher8 = permute(afterRound2, config.ipInverse);
-    printBits("After IP^-1 = ", cipher8);
+    printBits("经过逆初始置换 IP^-1 = ", cipher8);
     return cipher8;
 }
 
 // 单个 8 位密文块解密
 vector<int> decryptBlock(const vector<int> &cipher8, const SDesConfig &config, const vector<int> &k1, const vector<int> &k2) {
     cout << endl;
-    cout << "Decryption process" << endl;
-    printBits("Ciphertext block = ", cipher8);
+    cout << "解密过程" << endl;
+    printBits("密文块 = ", cipher8);
 
     vector<int> afterIp = permute(cipher8, config.ip);
-    printBits("After IP = ", afterIp);
+    printBits("经过初始置换 IP = ", afterIp);
 
-    vector<int> afterRound1 = fk(afterIp, k2, config, "Round 1 (K2)");
+    vector<int> afterRound1 = fk(afterIp, k2, config, "第 1 轮（K2）");
 
     vector<int> afterSwap = swapHalves(afterRound1);
-    printBits("After swap = ", afterSwap);
+    printBits("交换左右半部分后 = ", afterSwap);
 
-    vector<int> afterRound2 = fk(afterSwap, k1, config, "Round 2 (K1)");
+    vector<int> afterRound2 = fk(afterSwap, k1, config, "第 2 轮（K1）");
 
     vector<int> plain8 = permute(afterRound2, config.ipInverse);
-    printBits("After IP^-1 = ", plain8);
+    printBits("经过逆初始置换 IP^-1 = ", plain8);
     return plain8;
 }
 
 // 打印当前配置，方便用户核对
 void printConfigSummary(const SDesConfig &config) {
     cout << endl;
-    cout << "Current parameters" << endl;
+    cout << "当前参数" << endl;
     printPermutation("  P10 = ", config.p10);
     printPermutation("  P8 = ", config.p8);
     printPermutation("  IP = ", config.ip);
@@ -497,29 +501,34 @@ void printConfigSummary(const SDesConfig &config) {
 }
 
 int main() {
+#ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+#endif
+
     cout << "====================================" << endl;
-    cout << "          S-DES Cipher Program" << endl;
+    cout << "          S-DES 密码程序" << endl;
     cout << "====================================" << endl;
-    cout << "1. Encrypt" << endl;
-    cout << "2. Decrypt" << endl;
-    cout << "Please choose an option: " << flush;
+    cout << "1. 加密" << endl;
+    cout << "2. 解密" << endl;
+    cout << "请选择操作：" << flush;
 
     int choice = readChoice();
     if (choice != 1 && choice != 2) {
-        cout << "Invalid input. Please enter 1 or 2." << endl;
+        cout << "输入无效，请输入 1 或 2。" << endl;
         return 0;
     }
 
     SDesConfig config = loadDefaultConfig();
 
     cout << endl;
-    if (!askYes("Use default S-DES parameters? [Y/n]: ")) {
-        cout << "Enter custom parameters. Press Enter to keep the default value for each item." << endl;
-        config.p10 = readPermutationTable("P10 (10 numbers, values 1-10): ", 10, 10, config.p10);
-        config.p8 = readPermutationTable("P8 (8 numbers, values 1-10): ", 8, 10, config.p8);
-        config.ip = readPermutationTable("IP (8 numbers, values 1-8): ", 8, 8, config.ip);
-        config.ep = readExpansionTable("EP (8 numbers, values 1-4, duplicates allowed): ", 8, 4, config.ep);
-        config.p4 = readPermutationTable("P4 (4 numbers, values 1-4): ", 4, 4, config.p4);
+    if (!askYes("是否使用默认 S-DES 参数？[Y/n]：")) {
+        cout << "请输入自定义参数，直接回车可保持该项默认值。" << endl;
+        config.p10 = readPermutationTable("P10（10 个数字，范围 1-10）：", 10, 10, config.p10);
+        config.p8 = readPermutationTable("P8（8 个数字，范围 1-10）：", 8, 10, config.p8);
+        config.ip = readPermutationTable("IP（8 个数字，范围 1-8）：", 8, 8, config.ip);
+        config.ep = readExpansionTable("EP（8 个数字，范围 1-4，允许重复）：", 8, 4, config.ep);
+        config.p4 = readPermutationTable("P4（4 个数字，范围 1-4）：", 4, 4, config.p4);
         config.s0 = readSBox("S0", config.s0);
         config.s1 = readSBox("S1", config.s1);
     }
@@ -535,22 +544,22 @@ int main() {
     bool validS1 = validateSBox(config.s1);
 
     if (!validP10 || !validP8 || !validIp || !validEp || !validP4 || !validS0 || !validS1) {
-        cout << "Invalid parameters detected:" << endl;
-        cout << "  P10: " << (validP10 ? "OK" : "FAIL") << endl;
-        cout << "  P8 : " << (validP8 ? "OK" : "FAIL") << endl;
-        cout << "  IP : " << (validIp ? "OK" : "FAIL") << endl;
-        cout << "  EP : " << (validEp ? "OK" : "FAIL") << endl;
-        cout << "  P4 : " << (validP4 ? "OK" : "FAIL") << endl;
-        cout << "  S0 : " << (validS0 ? "OK" : "FAIL") << endl;
-        cout << "  S1 : " << (validS1 ? "OK" : "FAIL") << endl;
-        cout << "Invalid parameters detected. Please check the permutation tables and S-box values." << endl;
+        cout << "检测到无效参数：" << endl;
+        cout << "  P10：" << (validP10 ? "通过" : "失败") << endl;
+        cout << "  P8 ：" << (validP8 ? "通过" : "失败") << endl;
+        cout << "  IP ：" << (validIp ? "通过" : "失败") << endl;
+        cout << "  EP ：" << (validEp ? "通过" : "失败") << endl;
+        cout << "  P4 ：" << (validP4 ? "通过" : "失败") << endl;
+        cout << "  S0 ：" << (validS0 ? "通过" : "失败") << endl;
+        cout << "  S1 ：" << (validS1 ? "通过" : "失败") << endl;
+        cout << "参数无效，请检查置换表和 S 盒取值。" << endl;
         return 0;
     }
 
     printConfigSummary(config);
 
-    vector<int> key10 = readBitBlock("Enter the 10-bit key: ", 10);
-    vector<int> block8 = readBitBlock(choice == 1 ? "Enter the 8-bit plaintext block: " : "Enter the 8-bit ciphertext block: ", 8);
+    vector<int> key10 = readBitBlock("请输入 10 位密钥：", 10);
+    vector<int> block8 = readBitBlock(choice == 1 ? "请输入 8 位明文块：" : "请输入 8 位密文块：", 8);
 
     pair<vector<int>, vector<int>> subkeys = generateSubkeys(key10, config);
     vector<int> k1 = subkeys.first;
@@ -560,11 +569,11 @@ int main() {
     if (choice == 1) {
         result = encryptBlock(block8, config, k1, k2);
         cout << endl;
-        cout << "Encryption result: " << bitsToString(result) << endl;
+        cout << "加密结果：" << bitsToString(result) << endl;
     } else {
         result = decryptBlock(block8, config, k1, k2);
         cout << endl;
-        cout << "Decryption result: " << bitsToString(result) << endl;
+        cout << "解密结果：" << bitsToString(result) << endl;
     }
 
     return 0;
