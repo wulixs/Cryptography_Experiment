@@ -6,6 +6,10 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 using namespace std;
 
 // 将字母统一转成大写，便于后续统一处理
@@ -66,7 +70,7 @@ void buildKeySquare(const string &key, array<char, 25> &square, array<pair<int, 
 
 // 打印 5x5 密钥矩阵，方便用户核对
 void printKeySquare(const array<char, 25> &square) {
-    cout << "Key square:" << endl;
+    cout << "密钥矩阵：" << endl;
     for (int row = 0; row < 5; ++row) {
         for (int col = 0; col < 5; ++col) {
             cout << square[row * 5 + col] << ' ';
@@ -210,6 +214,11 @@ string playfairDecrypt(const string &cipherText, const array<char, 25> &square,
 }
 
 int main() {
+    // 在 Windows 控制台尝试设置 UTF-8 编码以减少中文输出乱码问题
+#ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+#endif
     int choice = 0;
     string key;
     string text;
@@ -217,28 +226,28 @@ int main() {
     array<pair<int, int>, 26> position{};
 
     cout << "====================================" << endl;
-    cout << "         Playfair Cipher Program" << endl;
+    cout << "         Playfair 密码程序" << endl;
     cout << "====================================" << endl;
-    cout << "1. Encrypt" << endl;
-    cout << "2. Decrypt" << endl;
-    cout << "Please choose an option: ";
+    cout << "1. 加密" << endl;
+    cout << "2. 解密" << endl;
+    cout << "请选择操作（输入数字）：";
     cin >> choice;
 
     if (choice != 1 && choice != 2) {
-        cout << "Invalid input. Please enter 1 or 2." << endl;
+        cout << "输入无效。请输入 1 或 2。" << endl;
         return 0;
     }
 
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-    cout << "Enter the keyword: ";
+    cout << "请输入密钥词：";
     getline(cin, key);
     if (normalizeLetters(key).empty()) {
-        cout << "Invalid key. The keyword must contain at least one letter." << endl;
+        cout << "无效的密钥。密钥至少包含一个字母。" << endl;
         return 0;
     }
 
-    cout << "Enter the text: ";
+    cout << "请输入文本：";
     getline(cin, text);
 
     buildKeySquare(key, square, position);
@@ -246,10 +255,10 @@ int main() {
 
     if (choice == 1) {
         string result = playfairEncrypt(text, square, position);
-        cout << "Encryption result: " << result << endl;
+        cout << "加密结果：" << result << endl;
     } else {
         string result = playfairDecrypt(text, square, position);
-        cout << "Decryption result: " << result << endl;
+        cout << "解密结果：" << result << endl;
     }
 
     return 0;
