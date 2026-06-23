@@ -265,6 +265,15 @@ int main() {
         return 0;
     }
 
+    // 加密前先检查密钥矩阵是否可逆，避免生成无法解密的密文
+    if (choice == 1) {
+        vector<vector<int>> inverseMatrix;
+        if (!invertMatrixMod26(keyMatrix, inverseMatrix)) {
+            cout << "This key matrix is not invertible modulo 26, so encryption is not possible." << endl;
+            return 0;
+        }
+    }
+
     // 清除缓冲区中的换行符，避免影响后续 getline
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
