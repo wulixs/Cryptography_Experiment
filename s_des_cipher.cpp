@@ -7,10 +7,6 @@
 #include <utility>
 #include <vector>
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 using namespace std;
 
 // S-DES 的全部参数集中存放，方便用户自定义和打印说明
@@ -501,11 +497,6 @@ void printConfigSummary(const SDesConfig &config) {
 }
 
 int main() {
-#ifdef _WIN32
-    SetConsoleOutputCP(CP_UTF8);
-    SetConsoleCP(CP_UTF8);
-#endif
-
     cout << "====================================" << endl;
     cout << "          S-DES 密码程序" << endl;
     cout << "====================================" << endl;
